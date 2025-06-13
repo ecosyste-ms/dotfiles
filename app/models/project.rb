@@ -4,6 +4,28 @@ class Project < ApplicationRecord
 
   validates :url, presence: true, uniqueness: { case_sensitive: false }
 
+  private
+
+  def self.faraday_connection(url)
+    Faraday.new(url: url) do |faraday|
+      faraday.response :follow_redirects
+      faraday.request :retry, max: 3, 
+                             interval: 0.5,
+                             interval_randomness: 0.5,
+                             backoff_factor: 2,
+                             retry_statuses: [500, 502, 503, 504, 408, 429]
+      faraday.options.timeout = 30
+      faraday.options.open_timeout = 10
+      faraday.adapter Faraday.default_adapter
+    end
+  end
+
+  def faraday_connection(url)
+    self.class.faraday_connection(url)
+  end
+
+  public
+
   has_many :issues, dependent: :delete_all
   has_many :releases, dependent: :delete_all
 
@@ -28,25 +50,7 @@ class Project < ApplicationRecord
   scope :without_keywords_from_contributors, -> { where(keywords_from_contributors: []) }
 
   def self.import
-    url = "https://packages.ecosyste.ms/api/v1/registries/github.com/packages?critical=true&per_page=1000"
-
-    conn = Faraday.new(url: url) do |faraday|
-      faraday.response :follow_redirects
-      faraday.adapter Faraday.default_adapter
-    end
-          
-    response = conn.get
-    return unless response.success?
-    
-    json = JSON.parse(response.body)
-
-    urls = json.map{|p| p['repository_url']}.compact.uniq
-    
-    urls.each do |url|
-      project = Project.find_or_create_by(url: url)
-      project.save
-      project.sync_async unless project.last_synced_at.present?
-    end
+    import_topic('dotfiles')
   end
 
   def self.discover_via_topics(limit=100)
@@ -66,52 +70,7 @@ class Project < ApplicationRecord
   end
 
   def self.ignore_words
-    ['0x0lobersyko', '3d', 'tag1', 'tag2', 'accessibility', 'acertea', 'addon', 'ai', 'ajax', 'algorithms', 'amazon', 'anakjalanan', 'analysis', 'analytics', 'android', 'angular', 'animation', 
-    'apache-spark', 'api', 'api-client', 'api-rest', 'api-wrapper', 'app', 'arduino', 'array', 'artificial-intelligence', 'ast', 'async', 'atmosphere', 'australia', 'auth', 'authentication', 
-    'automation', 'awesome', 'awesome-list', 'aws', 'azure', 'babel', 'backend', 'bash', 'bash-script', 'bdd', 'benchmark', 'big-data', 'bitcoin', 'blockchain', 'boilerplate', 'bootstrap', 
-    'bot', 'browser', 'bsd3', 'building', 'c', 'c-plus-plus', 'cache', 'canvas', 'chatgpt', 'check', 'chrome', 'citation', 'classification', 'cli', 'client', 'cloud', 'clustering', 'cmake', 
-    'cms', 'cnc', 'cnn', 'code', 'collaboration', 'collection', 'color', 'colors', 'command', 'command-line', 'command-line-tool', 'compiler', 'component', 'components', 'computer-vision', 
-    'computing', 'concurrency', 'config', 'configuration', 'console', 'containers', 'core', 'couchdb', 'course', 'cpp', 'cpu', 'cran', 'credit', 'cross-platform', 'crypto', 'csharp', 'css', 
-    'cuda', 'cuda-fortran', 'd3', 'd3js', 'dashboard', 'dashboards', 'dask', 'data', 'data-analysis', 'data-analysis-python', 'data-science', 'data-visualization', 'database', 'datacube', 
-    'dataset', 'datasets', 'date', 'debug', 'deep-learning', 'definition', 'deploy', 'design', 'design-system', 'devops', 'diff', 'digital-public-goods', 'directory', 'distributed-systems', 
-    'django', 'docker', 'documentation', 'dom', 'dotnet', 'download', 'downloader', 'dts', 'earth-engine', 'editor', 'education', 'elasticsearch', 'electricity', 'electron', 'email', 'emoji', 
-    'encryption', 'energy', 'energy-monitor', 'engineering', 'env', 'environment', 'epanet-python-toolkit', 'erp', 'error', 'es2015', 'es6', 'eslint', 'eslint-plugin', 'eslintconfig', 
-    'eslintplugin', 'esp8266', 'ethereum', 'events', 'express', 'expressjs', 'extension', 'fabric', 'facebook', 'farm', 'fast', 'fastapi', 'fetch', 'file', 'filter', 'finance', 'firebase', 
-    'first-good-issue', 'flask', 'flat-file-db', 'fleet-management', 'fluentui', 'flutter', 'font', 'food', 'forecast', 'forecasting', 'form', 'format', 'forms', 'fortran', 'framework', 
-    'front-end', 'frontend', 'fs', 'function', 'functional', 'functional-programming', 'functions', 'game', 'gdal-python', 'generator', 'geographic-information-systems', 'geopython', 
-    'geospatial', 'ggplot2', 'gis', 'git', 'github', 'github-action', 'github-actions', 'go', 'golang', 'google', 'google-cloud', 'google-earth-engine', 'gpt', 'gpu', 'gpu-acceleration', 
-    'gpu-computing', 'grafana', 'graph', 'graphql', 'gtfs', 'gui', 'hacktoberfest', 'hacktoberfest2020', 'hacktoberfest2021', 'hash', 'helm', 'helpers', 'herojoker', 'hfc', 
-    'high-performance-computing', 'home-assistant', 'home-automation', 'homeassistant', 'hooks', 'hpc', 'html', 'html5', 'http', 'https', 'hyper-function-component', 'i18n', 'icon', 'image', 
-    'image-classification', 'image-database', 'image-processing', 'image-segmentation', 'immutable', 'import', 'indoxcapital', 'influxdb', 'infrastructure', 'input', 'integration-tests', 'io', 
-    'iobroker', 'ios', 'iot', 'iot-platform', 'ipython-notebook', 'java', 'javascript', 'jest', 'jokiml', 'joss', 'jquery', 'js', 'json', 'jsx', 'julia', 'jupyter', 'jupyter-lab', 
-    'jupyter-notebook', 'jupyter-notebooks', 'jupyterhub', 'jwt', 'k8s', 'kotlin', 'kubernetes', 'landsat', 'language', 'laravel', 'leaflet', 'leaflet-plugins', 'library', 'lidar', 
-    'linear-programming', 'lint', 'linux', 'linux-foundation', 'llm', 'log', 'logger', 'logging', 'machine-learning', 'machine-learning-algorithms', 'machine-translation', 'macos', 
-    'management', 'manuscript', 'map', 'mapbox', 'mapping', 'maps', 'markdown', 'material', 'math', 'matlab', 'matlab-python-interface', 'matplotlib', 'mechanical-engineering', 'mejarobot', 
-    'metadata', 'metrics', 'mhkit-python', 'microservice', 'microservices', 'microsoft', 'middleware', 'ml', 'mobile', 'mocha', 'modbus', 'model', 'modeling', 'modelling', 'models', 'module', 
-    'modules', 'mongodb', 'monitoring', 'monorepo', 'monte-carlo-simulation', 'mqtt', 'mypy', 'mysql', 'nasa', 'nasa-data', 'native', 'natural-language-processing', 'netcdf', 'network', 
-    'neural-network', 'neural-networks', 'news', 'nextjs', 'nlp', 'nlp-library', 'node', 'node-js', 'nodejs', 'npm', 'npm-package', 'numba', 'number', 'numpy', 'nutrition', 'nuxt', 
-    'nuxt-module', 'nuxtjs', 'object', 'object-detection', 'odoo', 'open-data', 'open-source', 'openai', 'openai-gym', 'openapi', 'openfoodfacts', 'opensource', 'openstreetmap', 
-    'optimization', 'orm', 'osm', 'overview', 'package', 'package-manager', 'pandas', 'parse', 'parser', 'path', 'pdf', 'peer-reviewed', 'performance', 'php', 'pi0', 'pipeline', 'platform', 
-    'plotting', 'plotting-in-python', 'plugin', 'pluto-notebooks', 'poetry', 'polyfill', 'postcss', 'postgis', 'postgres', 'postgresql', 'programming', 'prometheus', 'prometheus-exporter', 
-    'promise', 'protobuf', 'proxy', 'public-good', 'public-goods', 'push', 'pwa', 'pyam', 'pypi-package', 'pyqt5', 'pyspark', 'python', 'python-3', 'python-awips', 'python-client', 
-    'python-library', 'python-module', 'python-package', 'python-toolkit', 'python-wrapper', 'python-wrappers', 'python3', 'python3-package', 'pytorch', 'query', 'queue', 'r', 'r-package', 
-    'rails', 'random', 'random-walk', 'raspberry-pi', 'raster', 'react', 'react-component', 'react-hooks', 'react-native', 'reactive', 'reactjs', 'real-time', 'redis', 'redux', 'regex', 
-    'regression', 'remote-sensing', 'reproducible-research', 'request', 'rest', 'rest-api', 'risk', 'robotics', 'router', 'rpc', 'rstats', 'rstudio', 'runtime', 
-    'rust', 'rust-lang', 's3', 'sample', 'sample-code', 'sass', 'satellite', 'satellite-data', 'satellite-imagery', 'satellite-images', 'scala', 'scenario', 'schema', 'science', 
-    'scientific', 'scientific-computations', 'scientific-computing', 'scientific-machine-learning', 'scientific-names', 'scientific-research', 'scientific-visualization', 
-    'scientific-workflows', 'scikit-learn', 'scipy', 'script', 'scss', 'sdk', 'search', 'security', 'segmentation', 'self-driving-car', 'sentinel', 'sentinel-1', 'serialization', 
-    'server', 'serverless', 'shell', 'simulation', 'smart-meter', 'smarthome', 'snakemake', 'sort', 'space', 'spark', 'spatial', 'spring', 'spring-boot', 'sql', 'sqlite', 'standard', 
-    'state', 'static-analyzer', 'statistics', 'storage', 'stream', 'string', 'style', 'styled-components', 'styleguide', 'svelte', 'svg', 'swagger', 'swift', 'table', 'tailwindcss', 'task', 
-    'tea', 'teanager', 'template', 'tensorflow', 'terminal', 'test', 'testing', 'text', 'text-mining', 'theme', 'threejs', 'time', 'time-series', 'time-series-analysis', 'time-series-forecasting', 
-    'timeseries', 'tool', 'toolkit', 'tools', 'torch', 'transit', 'transport', 'tree', 'trends', 'ts', 'tuning', 'tutorial', 'type', 'types', 'typescript', 'typescript-definitions', 'typings', 
-    'ui', 'uk', 'unicode', 'url', 'util', 'utilities', 'utility', 'utils', 'validate', 'validation', 'validator', 'vector', 'video', 'view', 'visualization', 'vue', 'vue-component', 'vue3', 
-    'vuejs', 'web', 'web-components', 'web-framework', 'web3', 'webapp', 'webgl', 'webgl2', 'webpack', 'webservice', 'website', 'websocket', 'windows', 'workflow', 'wrapper', 'xarray', 'xml', 
-    'yaml', 'yeoman-generator', 'yii2', 'zigbee', 'zsh','linter','bayesian','sonarqube', 'sonarqube-plugin', 'social', 'terraform', 'nginx', 'detection','tauri','repository', 'boost','privacy',
-    'mqtt-client', 'julia-language', 'linter', 'mesh-generation', 'rlang', 'hardware', 'conda-forge', 'static-site-generator', 'spec', 'specification', 'cartocss', 'solver', 'evaluation', 'opengl',
-    'navigation', 'iot-application', 'aframe', 'web-api', 'django-rest-framework', 'transmission', 'data-visualisation', 'streamlit', 'linear-algebra', 'streamlit-webapp', 'tutorials',
-    'connector', 'oop', 'development', 'random-forest', 'machinelearning', 'heroku', 'france', 'photography', 'complex-systems', 'docusaurus', 'r-stats', 'shapefile', 'optuna', 'webxr',
-    'berlin', 'pathways', 'list', 'tiles', 'hafas', 'arduino-library', 'audio-processing', 'leafletjs'
-  ]
+    []
   end
 
   def self.stop_words
@@ -192,7 +151,6 @@ class Project < ApplicationRecord
     fetch_repository
     fetch_owner
     fetch_dependencies
-    fetch_packages
     combine_keywords
     fetch_commits
     fetch_events
@@ -293,10 +251,7 @@ class Project < ApplicationRecord
   end
 
   def fetch_repository
-    conn = Faraday.new(url: repos_api_url) do |faraday|
-      faraday.response :follow_redirects
-      faraday.adapter Faraday.default_adapter
-    end
+    conn = faraday_connection(repos_api_url)
 
     response = conn.get
     return unless response.success?
@@ -324,10 +279,7 @@ class Project < ApplicationRecord
 
   def fetch_owner
     return unless owner_api_url.present?
-    conn = Faraday.new(url: owner_api_url) do |faraday|
-      faraday.response :follow_redirects
-      faraday.adapter Faraday.default_adapter
-    end
+    conn = faraday_connection(owner_api_url)
 
     response = conn.get
     return unless response.success?
@@ -435,10 +387,7 @@ class Project < ApplicationRecord
 
   def fetch_dependencies
     return unless repository.present?
-    conn = Faraday.new(url: repository['manifests_url']) do |faraday|
-      faraday.response :follow_redirects
-      faraday.adapter Faraday.default_adapter
-    end
+    conn = faraday_connection(repository['manifests_url'])
     response = conn.get
     return unless response.success?
     self.dependencies = JSON.parse(response.body)
@@ -468,7 +417,7 @@ class Project < ApplicationRecord
       # TODO paginate
       # TODO group dependencies by repo
       dependent_repos_url = "https://repos.ecosyste.ms/api/v1/usage/#{package["ecosystem"]}/#{package["name"]}/dependencies"
-      conn = Faraday.new(url: dependent_repos_url)
+      conn = faraday_connection(dependent_repos_url)
       response = conn.get
       return unless response.success?
       dependent_repos += JSON.parse(response.body)
@@ -694,10 +643,15 @@ class Project < ApplicationRecord
   end
 
   def self.import_topic(topic)
-    resp = Faraday.get("https://repos.ecosyste.ms/api/v1/topics/#{ERB::Util.url_encode(topic)}?per_page=100&sort=created_at&order=desc")
+    conn = faraday_connection("https://repos.ecosyste.ms/api/v1/topics/#{ERB::Util.url_encode(topic)}?per_page=100&sort=created_at&order=desc")
+    resp = conn.get
     if resp.status == 200
       data = JSON.parse(resp.body)
-      urls = data['repositories'].map{|p| p['html_url'] }.uniq.reject(&:blank?)
+      urls = data['repositories']
+        .select{|p| p['full_name']&.end_with?('dotfiles') }
+        .map{|p| p['html_url'] }
+        .uniq
+        .reject(&:blank?)
       urls.each do |url|
         existing_project = Project.find_by(url: url.downcase)
         if existing_project.present?
@@ -728,10 +682,15 @@ class Project < ApplicationRecord
   end
 
   def self.import_org(host, org)
-    resp = Faraday.get("https://repos.ecosyste.ms/api/v1/hosts/#{host}/owners/#{org}/repositories?per_page=100")
+    conn = faraday_connection("https://repos.ecosyste.ms/api/v1/hosts/#{host}/owners/#{org}/repositories?per_page=100")
+    resp = conn.get
     if resp.status == 200
       data = JSON.parse(resp.body)
-      urls = data.map{|p| p['html_url'] }.uniq.reject(&:blank?)
+      urls = data
+        .select{|p| p['full_name']&.end_with?('dotfiles') }
+        .map{|p| p['html_url'] }
+        .uniq
+        .reject(&:blank?)
       urls.each do |url|
         existing_project = Project.find_by(url: url)
         if existing_project.present?
@@ -1130,10 +1089,7 @@ class Project < ApplicationRecord
     return unless repository.present?
     return unless repository['releases_url'].present?
 
-    conn = Faraday.new(url: repository['releases_url'] + '?per_page=1000') do |faraday|
-      faraday.response :follow_redirects
-      faraday.adapter Faraday.default_adapter
-    end
+    conn = faraday_connection(repository['releases_url'] + '?per_page=1000')
     response = conn.get
     return unless response.success?
     releases = JSON.parse(response.body)

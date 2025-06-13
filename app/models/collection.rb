@@ -3,6 +3,24 @@ class Collection < ApplicationRecord
 
   has_many :projects
 
+  private
+
+  def faraday_connection(url)
+    Faraday.new(url: url) do |faraday|
+      faraday.response :follow_redirects
+      faraday.request :retry, max: 3, 
+                             interval: 0.5,
+                             interval_randomness: 0.5,
+                             backoff_factor: 2,
+                             retry_statuses: [500, 502, 503, 504, 408, 429]
+      faraday.options.timeout = 30
+      faraday.options.open_timeout = 10
+      faraday.adapter Faraday.default_adapter
+    end
+  end
+
+  public
+
   def to_s
     name
   end
@@ -79,10 +97,15 @@ class Collection < ApplicationRecord
   end
 
   def import_topic(topic)
-    resp = Faraday.get("https://repos.ecosyste.ms/api/v1/topics/#{topic}?per_page=1000")
+    conn = faraday_connection("https://repos.ecosyste.ms/api/v1/topics/#{topic}?per_page=1000")
+    resp = conn.get
     if resp.status == 200
       data = JSON.parse(resp.body)
-      urls = data['repositories'].map{|p| p['html_url'] }.uniq.reject(&:blank?)
+      urls = data['repositories']
+        .select{|p| p['full_name']&.end_with?('dotfiles') }
+        .map{|p| p['html_url'] }
+        .uniq
+        .reject(&:blank?)
       urls.each do |url|
         puts url
         project = projects.find_or_create_by(url: url)
@@ -92,10 +115,15 @@ class Collection < ApplicationRecord
   end
 
   def import_org(host, org)
-    resp = Faraday.get("https://repos.ecosyste.ms/api/v1/hosts/#{host}/owners/#{org}/repositories?per_page=1000")
+    conn = faraday_connection("https://repos.ecosyste.ms/api/v1/hosts/#{host}/owners/#{org}/repositories?per_page=1000")
+    resp = conn.get
     if resp.status == 200
       data = JSON.parse(resp.body)
-      urls = data.map{|p| p['html_url'] }.uniq.reject(&:blank?)
+      urls = data
+        .select{|p| p['full_name']&.end_with?('dotfiles') }
+        .map{|p| p['html_url'] }
+        .uniq
+        .reject(&:blank?)
       urls.each do |url|
         puts url
         project = projects.find_or_create_by(url: url)

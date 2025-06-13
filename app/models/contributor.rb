@@ -9,6 +9,24 @@ class Contributor < ApplicationRecord
 
   scope :with_projects, -> { where('projects_count > 0') }
 
+  private
+
+  def faraday_connection(url)
+    Faraday.new(url: url) do |faraday|
+      faraday.response :follow_redirects
+      faraday.request :retry, max: 3, 
+                             interval: 0.5,
+                             interval_randomness: 0.5,
+                             backoff_factor: 2,
+                             retry_statuses: [500, 502, 503, 504, 408, 429]
+      faraday.options.timeout = 30
+      faraday.options.open_timeout = 10
+      faraday.adapter Faraday.default_adapter
+    end
+  end
+
+  public
+
   scope :valid_email, -> { where('email like ?', '%@%') }
 
   scope :display, -> { valid_email.ignored_emails.human.with_projects }
@@ -53,7 +71,8 @@ class Contributor < ApplicationRecord
   def fetch_profile
     return if repos_api_url.blank?
     
-    response = Faraday.get repos_api_url
+    conn = faraday_connection(repos_api_url)
+    response = conn.get
     return unless response.success?
 
     profile = JSON.parse(response.body)
@@ -66,12 +85,14 @@ class Contributor < ApplicationRecord
   def import_repos
     return if repos_api_url.blank?
 
-    response = Faraday.get("#{repos_api_url}/repositories?per_page=1000")
+    conn = faraday_connection("#{repos_api_url}/repositories?per_page=1000")
+    response = conn.get
     return unless response.success?
 
     repos = JSON.parse(response.body)
     repos.each do |repo|
       next if repo['archived'] || repo['fork'] || repo['private'] || repo['template']
+      next unless repo['full_name']&.end_with?('dotfiles')
       
       project = Project.find_or_create_by(url: repo['html_url'])
       project.sync_async unless project.last_synced_at.present?
