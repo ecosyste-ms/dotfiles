@@ -78,6 +78,10 @@ module EcosystemsHelper
         {
           name: "Open Collective",
           url: "https://opencollective.ecosyste.ms"
+        },
+        {
+          name: "Dependabot",
+          url: "https://dependabot.ecosyste.ms"
         }
       ],
       "Applications" => [
@@ -100,8 +104,8 @@ module EcosystemsHelper
           url: "https://awesome.ecosyste.ms"
         },
         {
-          name: "Dotfiles",
-          url: "https://dotfiles.ecosyste.ms"
+          name: "Ruby",
+          url: "https://ruby.ecosyste.ms"
         }
       ]
     }
