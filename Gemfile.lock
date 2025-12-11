@@ -330,6 +330,7 @@ DEPENDENCIES
   bootstrap-icons
   cff
   commonmarker
+  connection_pool (< 3)
   counter_culture
   csv
   dalli
