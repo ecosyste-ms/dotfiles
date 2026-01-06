@@ -56,15 +56,13 @@ GEM
       language_list (~> 1.2.1)
     chronic_duration (0.10.6)
       numerizer (~> 0.1.1)
-    commonmarker (2.6.0)
-      rb_sys (~> 0.9)
-    commonmarker (2.6.0-aarch64-linux-musl)
-    commonmarker (2.6.0-arm64-darwin)
-    commonmarker (2.6.0-x86_64-darwin)
-    commonmarker (2.6.0-x86_64-linux)
-    commonmarker (2.6.0-x86_64-linux-musl)
+    commonmarker (2.6.1-aarch64-linux)
+    commonmarker (2.6.1-arm-linux)
+    commonmarker (2.6.1-arm64-darwin)
+    commonmarker (2.6.1-x86_64-darwin)
+    commonmarker (2.6.1-x86_64-linux)
     concurrent-ruby (1.3.6)
-    connection_pool (3.0.2)
+    connection_pool (2.5.5)
     counter_culture (3.11.4)
       activerecord (>= 4.2)
       activesupport (>= 4.2)
@@ -188,7 +186,7 @@ GEM
     psych (5.3.1)
       date
       stringio
-    public_suffix (7.0.0)
+    public_suffix (7.0.2)
     puma (7.1.0)
       nio4r (~> 2.0)
     racc (1.8.1)
@@ -224,9 +222,6 @@ GEM
       tsort (>= 0.2)
       zeitwerk (~> 2.6)
     rake (13.3.1)
-    rake-compiler-dock (1.10.0)
-    rb_sys (0.9.123)
-      rake-compiler-dock (= 1.10.0)
     rdoc (7.0.3)
       erb
       psych (>= 4.0.0)
@@ -258,12 +253,12 @@ GEM
     shoulda-context (3.0.0.rc1)
     shoulda-matchers (7.0.1)
       activesupport (>= 7.1)
-    sidekiq (8.1.0)
-      connection_pool (>= 3.0.0)
-      json (>= 2.16.0)
-      logger (>= 1.7.0)
-      rack (>= 3.2.0)
-      redis-client (>= 0.26.0)
+    sidekiq (8.0.10)
+      connection_pool (>= 2.5.0)
+      json (>= 2.9.0)
+      logger (>= 1.6.2)
+      rack (>= 3.1.0)
+      redis-client (>= 0.23.2)
     sidekiq-status (4.0.0)
       base64
       chronic_duration
@@ -273,7 +268,7 @@ GEM
       concurrent-ruby (~> 1.0, >= 1.0.5)
       sidekiq (>= 7.0.0, < 9.0.0)
       thor (>= 1.0, < 3.0)
-    simple_form (5.4.0)
+    simple_form (5.4.1)
       actionpack (>= 7.0)
       activemodel (>= 7.0)
     sitemap_generator (6.3.0)
@@ -330,7 +325,7 @@ DEPENDENCIES
   bootstrap-icons
   cff
   commonmarker
-  connection_pool (< 4)
+  connection_pool (< 3)
   counter_culture
   csv
   dalli
@@ -388,14 +383,13 @@ CHECKSUMS
   builder (3.3.0) sha256=497918d2f9dca528fdca4b88d84e4ef4387256d984b8154e9d5d3fe5a9c8835f
   cff (1.3.0) sha256=d2b65d57160040ad244087d65b89769558a40aafb34b13d048e0ea72bc521316
   chronic_duration (0.10.6) sha256=fac58d4147d3183a40811400380cafcef049f2bb02421d2fd1c6e685fbe8facc
-  commonmarker (2.6.0) sha256=2af2bff39bcf6e52198dca86172f4c691e661eac88667958a40a718106a0f254
-  commonmarker (2.6.0-aarch64-linux-musl) sha256=4b1c1f27e7e433776f0811b29a1380bff00be343ebcf97cbf5d5e407a19c08ba
-  commonmarker (2.6.0-arm64-darwin) sha256=1e154955c5e32735bec7d5779e0fb1d21e55f46bcfcd43399ec1cbfc105030a0
-  commonmarker (2.6.0-x86_64-darwin) sha256=4e139f919fc761147263c7e0a19750c0fe3717e577e7e1b793e6cdb7596c4f94
-  commonmarker (2.6.0-x86_64-linux) sha256=cddae70929aea45c6a8aa72bfc02d15029611b0e88fee965d0151bc9453fd8bb
-  commonmarker (2.6.0-x86_64-linux-musl) sha256=10159e84446362daa92380f0f68fd3818affa86527f0f098d0d08ac49941538e
+  commonmarker (2.6.1-aarch64-linux) sha256=8279808de1c93a23367271beb1266a5c5f558f729abd2b68975ec89bd8c1e0db
+  commonmarker (2.6.1-arm-linux) sha256=ee064b7c5d446d841299a0f9a38d7e6d486c44c89b4237695c7d59d8cf256ddb
+  commonmarker (2.6.1-arm64-darwin) sha256=3f99053bdebd15b1dc060da51f7799655882fd3f4118340bf1485c0a5863365f
+  commonmarker (2.6.1-x86_64-darwin) sha256=41f1b09c581e2bf42951844ad652aaad543f8f13f1b5b5c18f3cd6dd7b0f3803
+  commonmarker (2.6.1-x86_64-linux) sha256=7f43729af032cfb88c0e897f53bf37ad78c6ec28220a0911f5e34b4f041e7ec7
   concurrent-ruby (1.3.6) sha256=6b56837e1e7e5292f9864f34b69c5a2cbc75c0cf5338f1ce9903d10fa762d5ab
-  connection_pool (3.0.2) sha256=33fff5ba71a12d2aa26cb72b1db8bba2a1a01823559fb01d29eb74c286e62e0a
+  connection_pool (2.5.5) sha256=e54ff92855753df1fd7c59fa04a398833355f27dd14c074f8c83a05f72a716ad
   counter_culture (3.11.4) sha256=af64b6e429a2755057a7162826ea68ae354b869506199a6f521d171765c2ca38
   crack (1.0.1) sha256=ff4a10390cd31d66440b7524eb1841874db86201d5b70032028553130b6d4c7e
   crass (1.0.6) sha256=dc516022a56e7b3b156099abc81b6d2b08ea1ed12676ac7a5657617f012bd45d
@@ -465,7 +459,7 @@ CHECKSUMS
   pp (0.6.3) sha256=2951d514450b93ccfeb1df7d021cae0da16e0a7f95ee1e2273719669d0ab9df6
   prettyprint (0.2.0) sha256=2bc9e15581a94742064a3cc8b0fb9d45aae3d03a1baa6ef80922627a0766f193
   psych (5.3.1) sha256=eb7a57cef10c9d70173ff74e739d843ac3b2c019a003de48447b2963d81b1974
-  public_suffix (7.0.0) sha256=f7090b5beb0e56f9f10d79eed4d5fbe551b3b425da65877e075dad47a6a1b095
+  public_suffix (7.0.2) sha256=9114090c8e4e7135c1fd0e7acfea33afaab38101884320c65aaa0ffb8e26a857
   puma (7.1.0) sha256=e45c10cb124f224d448c98db653a75499794edbecadc440ad616cf50f2fd49dd
   racc (1.8.1) sha256=4a7f6929691dbec8b5209a0b373bc2614882b55fc5d2e447a21aaa691303d62f
   rack (3.2.4) sha256=5d74b6f75082a643f43c1e76b419c40f0e5527fcfee1e669ac1e6b73c0ccb6f6
@@ -478,8 +472,6 @@ CHECKSUMS
   rails-html-sanitizer (1.6.2) sha256=35fce2ca8242da8775c83b6ba9c1bcaad6751d9eb73c1abaa8403475ab89a560
   railties (8.1.1) sha256=fb0c7038b147bea41bf6697fa443ff1c5c47d3bb1eedd9ecf1bceeb90efcb868
   rake (13.3.1) sha256=8c9e89d09f66a26a01264e7e3480ec0607f0c497a861ef16063604b1b08eb19c
-  rake-compiler-dock (1.10.0) sha256=dd62ee19df2a185a3315697e560cfa8cc9129901332152851e023fab0e94bf11
-  rb_sys (0.9.123) sha256=c22ae84d1bca3eec0f13a45ae4ca9ba6eace93d5be270a40a9c0a9a5b92a34e5
   rdoc (7.0.3) sha256=dfe3d0981d19b7bba71d9dbaeb57c9f4e3a7a4103162148a559c4fc687ea81f9
   redis (5.4.1) sha256=b5e675b57ad22b15c9bcc765d5ac26f60b675408af916d31527af9bd5a81faae
   redis-client (0.26.2) sha256=1336fb5a7202d398b719531853c184b7c9cbdcace1f00f8356062b9dfba6779b
@@ -494,10 +486,10 @@ CHECKSUMS
   securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1
   shoulda-context (3.0.0.rc1) sha256=6e0d9d52ab798c13bc2b490c8537d4bf30cfd318a1ea839c39a66d1d293c6a1a
   shoulda-matchers (7.0.1) sha256=b4bfd8744c10e0a36c8ac1a687f921ee7e25ed529e50488d61b79a8688749c77
-  sidekiq (8.1.0) sha256=6bde5eaee9e4d7b1121e97ebd585273627fb32b1f870a47893723572479ad1e4
+  sidekiq (8.0.10) sha256=37ccd8da8d46f6779b8655cb30c1bfcb0decd57e890ff56d8b8252a5d9a84cd6
   sidekiq-status (4.0.0) sha256=3f45627efaa54c7f3e3b62dda358425af07fd7c596d6ab50d56ef3e45cbcdb67
   sidekiq-unique-jobs (8.0.12) sha256=000a00976be4411a4999723086ebcad8d9b7e5ddfdfe01b77c5c6b98de3115fe
-  simple_form (5.4.0) sha256=eb1ce5b0ec36ae171f2e2a07ec479ad3eaeb53fa750aa3f775a7cb7b684810ee
+  simple_form (5.4.1) sha256=58c3d229034c7e5545035c3271b6f030ef730c340b9d7d8eb730e0a385b20808
   sitemap_generator (6.3.0) sha256=1d803cbf03c44736bea05b9e3363d3523fec4e24f3abedad294d9c57cab994f3
   sprockets (4.2.2) sha256=761e5a49f1c288704763f73139763564c845a8f856d52fba013458f8af1b59b1
   sprockets-rails (3.5.2) sha256=a9e88e6ce9f8c912d349aa5401509165ec42326baf9e942a85de4b76dbc4119e
